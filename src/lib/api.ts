@@ -1,4 +1,4 @@
-import axios, { AxiosError } from 'axios';
+import axios from 'axios';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api';
 
@@ -12,7 +12,6 @@ const api = axios.create({
 // Interceptor para agregar el token a todas las peticiones
 api.interceptors.request.use(
   (config) => {
-    // Obtener el token del localStorage
     if (typeof window !== 'undefined') {
       const stored = localStorage.getItem('auth-storage');
       if (stored) {
@@ -35,15 +34,12 @@ api.interceptors.request.use(
 // Interceptor para manejar errores de autenticación
 api.interceptors.response.use(
   (response) => response,
-  async (error: AxiosError) => {
-    const originalRequest = error.config as any;
+  async (error) => {
+    const originalRequest = error.config;
 
-    // Si es error 401 y no hemos reintentado
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
 
-      // Aquí podrías implementar lógica de refresh token
-      // Por ahora, simplemente redirigimos al login
       if (typeof window !== 'undefined') {
         localStorage.removeItem('auth-storage');
         window.location.href = '/auth/login';
