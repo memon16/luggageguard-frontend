@@ -1,41 +1,40 @@
-// store/useBookingStore.ts
 import { create } from 'zustand';
-import type { BookingFormData, PriceCalculation } from '@/types';
 
-interface BookingState {
-  formData: Partial<BookingFormData>;
-  currentStep: number;
-  priceCalculation: PriceCalculation | null;
-  
-  setFormData: (data: Partial<BookingFormData>) => void;
-  setStep: (step: number) => void;
-  setPriceCalculation: (calc: PriceCalculation) => void;
-  resetBooking: () => void;
+interface BookingFormData {
+  pickupAddress: string;
+  pickupLat: number;
+  pickupLng: number;
+  pickupDate: string;
+  pickupTimeSlot: string;
+  numberOfBags: number;
+  storageDays: number;
+  deliveryAddress: string;
+  deliveryLat: number;
+  deliveryLng: number;
+  deliveryDate: string;
+  deliveryTimeSlot: string;
+  specialInstructions: string;
 }
 
-const initialFormData: Partial<BookingFormData> = {
-  numberOfBags: 1,
-  storageDays: 1,
-};
+interface PriceCalculation {
+  basePrice: number;
+  storagePrice: number;
+  discount: number;
+  total: number;
+}
+
+interface BookingState {
+  formData: BookingFormData | null;
+  priceCalculation: PriceCalculation | null;
+  setFormData: (data: BookingFormData) => void;
+  setPriceCalculation: (calc: PriceCalculation) => void;
+  clearBooking: () => void;
+}
 
 export const useBookingStore = create<BookingState>((set) => ({
-  formData: initialFormData,
-  currentStep: 1,
+  formData: null,
   priceCalculation: null,
-  
-  setFormData: (data) =>
-    set((state) => ({
-      formData: { ...state.formData, ...data },
-    })),
-  
-  setStep: (step) => set({ currentStep: step }),
-  
+  setFormData: (data) => set({ formData: data }),
   setPriceCalculation: (calc) => set({ priceCalculation: calc }),
-  
-  resetBooking: () =>
-    set({
-      formData: initialFormData,
-      currentStep: 1,
-      priceCalculation: null,
-    }),
+  clearBooking: () => set({ formData: null, priceCalculation: null }),
 }));
