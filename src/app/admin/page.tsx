@@ -34,7 +34,7 @@ export default function AdminPage() {
 
   const loadAllBookings = async (token: string) => {
     try {
-      const response = await fetch('http://localhost:4000/api/bookings', {
+      const response = await fetch('https://luggageguard-backend-production-efd6.up.railway.app/api/bookings', {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const data = await response.json();
