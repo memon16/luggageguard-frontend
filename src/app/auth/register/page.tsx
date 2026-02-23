@@ -22,7 +22,7 @@ export default function RegisterPage() {
     setLoading(true);
 
     try {
-      const response = await fetch('http://https://luggageguard-backend-production-efd6.up.railway.app/api/auth/register', {
+      const response = await fetch('https://luggageguard-backend-production-efd6.up.railway.app/api/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),

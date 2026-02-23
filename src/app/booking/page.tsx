@@ -95,7 +95,7 @@ export default function BookingPage() {
     try {
       const token = localStorage.getItem('accessToken');
       
-      const response = await fetch('http://https://luggageguard-backend-production-efd6.up.railway.app/api/bookings', {
+      const response = await fetch('https://luggageguard-backend-production-efd6.up.railway.app/api/bookings', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
