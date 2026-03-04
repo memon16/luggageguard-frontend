@@ -114,10 +114,20 @@ export default function DashboardPage() {
                     </div>
                   </div>
 
-                  <div className="mt-4 pt-4 border-t flex space-x-4 text-sm text-gray-600">
-                    <span>🎒 {booking.numberOfBags} maleta(s)</span>
-                    <span>📅 {booking.storageDays} día(s)</span>
-                  </div>
+                  <div className="mt-4 pt-4 border-t flex justify-between items-center">
+  <div className="flex space-x-4 text-sm text-gray-600">
+    <span>🎒 {booking.numberOfBags} maleta(s)</span>
+    <span>📅 {booking.storageDays} día(s)</span>
+  </div>
+  {booking.status === 'PENDING' && (
+    <button
+      onClick={() => router.push(`/payment/${booking.id}`)}
+      className="bg-green-500 text-white px-6 py-2 rounded-lg hover:bg-green-600 font-semibold"
+    >
+      💳 Pagar ahora
+    </button>
+  )}
+</div>
                 </div>
               ))}
             </div>
