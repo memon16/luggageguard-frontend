@@ -7,7 +7,7 @@ import Link from 'next/link';
 export default function PaymentPage() {
   const router = useRouter();
 const params = useParams();
-const bookingId = params?.id as string;
+const bookingId = Array.isArray(params?.id) ? params.id[0] : params?.id as string;
   
   const [booking, setBooking] = useState<any>(null);
   const [loading, setLoading] = useState(true);
