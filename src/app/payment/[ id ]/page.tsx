@@ -21,10 +21,7 @@ export default function PaymentPage() {
 
   const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'https://luggageguard-backend-production-efd6.up.railway.app/api';
 
-const rawId = params?.id;
-const bookingId = Array.isArray(rawId) ? rawId[0] : rawId as string;
-console.log('params:', params);
-console.log('bookingId:', bookingId);
+
 
   useEffect(() => {
     if (!bookingId) return; 
