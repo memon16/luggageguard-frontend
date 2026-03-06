@@ -6,8 +6,8 @@ import Link from 'next/link';
 
 export default function PaymentPage() {
   const router = useRouter();
-  const params = useParams();
-  const bookingId = Array.isArray(params.id) ? params.id[0] : params.id as string;
+const params = useParams();
+const bookingId = params?.id as string;
   
   const [booking, setBooking] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -21,6 +21,7 @@ export default function PaymentPage() {
   const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'https://luggageguard-backend-production-efd6.up.railway.app/api';
 
   useEffect(() => {
+    if (!bookingId) return; 
     const token = localStorage.getItem('accessToken');
     if (!token) {
       router.push('/auth/login');
