@@ -29,6 +29,7 @@ export default function DashboardPage() {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const data = await response.json();
+      console.log('bookings data:', data);
       if (response.ok) setBookings(data.data || []);
     } catch (error) {
       console.error('Error:', error);
