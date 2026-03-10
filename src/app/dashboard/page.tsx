@@ -10,6 +10,10 @@ export default function DashboardPage() {
   const [bookings, setBookings] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState<'active' | 'history'>('active');
+  const [hiddenIds, setHiddenIds] = useState<string[]>(() => {
+    if (typeof window === 'undefined') return [];
+    return JSON.parse(localStorage.getItem('hiddenBookings') || '[]');
+  });
 
   useEffect(() => {
     const storedUser = localStorage.getItem('user');
@@ -53,8 +57,16 @@ export default function DashboardPage() {
     }
   };
 
+  const handleHide = (bookingId: string) => {
+    const updated = [...hiddenIds, bookingId];
+    setHiddenIds(updated);
+    localStorage.setItem('hiddenBookings', JSON.stringify(updated));
+  };
+
   const activeBookings = bookings.filter(b => !['DELIVERED', 'CANCELLED'].includes(b.status));
-  const historyBookings = bookings.filter(b => ['DELIVERED', 'CANCELLED'].includes(b.status));
+  const historyBookings = bookings
+    .filter(b => ['DELIVERED', 'CANCELLED'].includes(b.status))
+    .filter(b => !hiddenIds.includes(b.id));
 
   if (loading) return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
 
@@ -100,16 +112,23 @@ export default function DashboardPage() {
           <span>🎒 {booking.numberOfBags} bag(s)</span>
           <span>📅 {booking.storageDays} day(s)</span>
         </div>
-        {booking.status === 'PENDING' && (
-          <div className="flex space-x-3">
-            <button onClick={() => handleCancel(booking.id)} className="bg-red-100 text-red-600 px-4 py-2 rounded-lg hover:bg-red-200 font-semibold text-sm">
-              Cancel
+        <div className="flex space-x-3">
+          {booking.status === 'PENDING' && (
+            <>
+              <button onClick={() => handleCancel(booking.id)} className="bg-red-100 text-red-600 px-4 py-2 rounded-lg hover:bg-red-200 font-semibold text-sm">
+                Cancel
+              </button>
+              <button onClick={() => router.push(`/payment/${booking.id}`)} className="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 font-semibold text-sm">
+                💳 Pay now
+              </button>
+            </>
+          )}
+          {['DELIVERED', 'CANCELLED'].includes(booking.status) && (
+            <button onClick={() => handleHide(booking.id)} className="text-gray-400 hover:text-red-500 text-sm px-3 py-2 rounded-lg hover:bg-red-50">
+              🗑️ Hide
             </button>
-            <button onClick={() => router.push(`/payment/${booking.id}`)} className="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 font-semibold text-sm">
-              💳 Pay now
-            </button>
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </div>
   );
