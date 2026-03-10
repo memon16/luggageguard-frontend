@@ -82,7 +82,7 @@ export default function AdminPage() {
             </span>
           </div>
           <p className="text-sm text-gray-500 mt-1">
-            {booking.user?.firstName} {booking.user?.lastName} — {booking.user?.email}
+             {booking.user?.firstName} {booking.user?.lastName} — {booking.user?.email} — 📞 {booking.user?.phone || 'No phone'}
           </p>
         </div>
         <div className="text-right">
