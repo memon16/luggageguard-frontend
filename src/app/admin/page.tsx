@@ -48,7 +48,7 @@ export default function AdminPage() {
     }
   };
 
-  const updateStatus = async (bookingId: string, newStatus: string) => {
+ const updateStatus = async (bookingId: string, newStatus: string) => {
     const token = localStorage.getItem('accessToken');
     try {
       const response = await fetch(`${API_URL}/bookings/${bookingId}`, {
@@ -56,7 +56,9 @@ export default function AdminPage() {
         headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: newStatus })
       });
-      if (response.ok) loadBookings(token!);
+      if (response.ok) {
+        setBookings(prev => prev.map(b => b.id === bookingId ? { ...b, status: newStatus } : b));
+      }
     } catch (error) {
       console.error('Error:', error);
     }
