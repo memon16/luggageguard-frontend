@@ -42,6 +42,21 @@ export default function DashboardPage() {
     router.push('/');
   };
 
+  const handleCancel = async (bookingId: string) => {
+  if (!confirm('Are you sure you want to cancel this booking?')) return;
+  const token = localStorage.getItem('accessToken');
+  try {
+    const response = await fetch(`https://luggageguard-backend-production-efd6.up.railway.app/api/bookings/${bookingId}`, {
+      method: 'PATCH',
+      headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status: 'CANCELLED' })
+    });
+    if (response.ok) loadBookings(token!);
+  } catch (error) {
+    console.error('Error cancelling booking:', error);
+  }
+};
+
   if (loading) {
     return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
   }
@@ -120,13 +135,21 @@ export default function DashboardPage() {
                       <span>📅 {booking.storageDays} day(s)</span>
                     </div>
                     {booking.status === 'PENDING' && (
-                      <button
-                        onClick={() => router.push(`/payment/${booking.id}`)}
-                        className="bg-green-500 text-white px-6 py-2 rounded-lg hover:bg-green-600 font-semibold"
-                      >
-                        💳 Pay now
-                      </button>
-                    )}
+  <div className="flex space-x-3">
+    <button
+      onClick={() => handleCancel(booking.id)}
+      className="bg-red-100 text-red-600 px-6 py-2 rounded-lg hover:bg-red-200 font-semibold"
+    >
+      Cancel
+    </button>
+    <button
+      onClick={() => router.push(`/payment/${booking.id}`)}
+      className="bg-green-500 text-white px-6 py-2 rounded-lg hover:bg-green-600 font-semibold"
+    >
+      💳 Pay now
+    </button>
+  </div>
+)}
                   </div>
                 </div>
               ))}
