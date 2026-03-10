@@ -4,37 +4,38 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
+const API_URL = 'https://luggageguard-backend-production-efd6.up.railway.app/api';
+
+const STATUS_FLOW = ['PENDING', 'CONFIRMED', 'PICKED_UP', 'IN_STORAGE', 'OUT_FOR_DELIVERY', 'DELIVERED', 'CANCELLED'];
+
+const STATUS_COLORS: Record<string, string> = {
+  PENDING: 'bg-yellow-100 text-yellow-800',
+  CONFIRMED: 'bg-blue-100 text-blue-800',
+  PICKED_UP: 'bg-purple-100 text-purple-800',
+  IN_STORAGE: 'bg-indigo-100 text-indigo-800',
+  OUT_FOR_DELIVERY: 'bg-orange-100 text-orange-800',
+  DELIVERED: 'bg-green-100 text-green-800',
+  CANCELLED: 'bg-red-100 text-red-800',
+};
+
 export default function AdminPage() {
   const router = useRouter();
   const [bookings, setBookings] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [user, setUser] = useState<any>(null);
+  const [filter, setFilter] = useState('ALL');
 
   useEffect(() => {
-    const storedUser = localStorage.getItem('user');
+    const user = localStorage.getItem('user');
     const token = localStorage.getItem('accessToken');
+    if (!user || !token) { router.push('/auth/login'); return; }
+    const parsedUser = JSON.parse(user);
+    if (parsedUser.role !== 'ADMIN') { router.push('/dashboard'); return; }
+    loadBookings(token);
+  }, []);
 
-    if (!storedUser || !token) {
-      router.push('/auth/login');
-      return;
-    }
-
-    const userData = JSON.parse(storedUser);
-    setUser(userData);
-
-    // Solo permitir acceso a ADMIN
-    if (userData.role !== 'ADMIN') {
-      alert('No tienes permisos de administrador');
-      router.push('/dashboard');
-      return;
-    }
-
-    loadAllBookings(token);
-  }, [router]);
-
-  const loadAllBookings = async (token: string) => {
+  const loadBookings = async (token: string) => {
     try {
-      const response = await fetch('https://luggageguard-backend-production-efd6.up.railway.app/api/bookings', {
+      const response = await fetch(`${API_URL}/bookings`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const data = await response.json();
@@ -46,134 +47,116 @@ export default function AdminPage() {
     }
   };
 
-  const handleLogout = () => {
-    localStorage.clear();
-    router.push('/');
+  const updateStatus = async (bookingId: string, newStatus: string) => {
+    const token = localStorage.getItem('accessToken');
+    try {
+      const response = await fetch(`${API_URL}/bookings/${bookingId}`, {
+        method: 'PATCH',
+        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: newStatus })
+      });
+      if (response.ok) loadBookings(token!);
+    } catch (error) {
+      console.error('Error:', error);
+    }
   };
 
-  if (loading) {
-    return <div className="min-h-screen flex items-center justify-center">Cargando...</div>;
-  }
+  const filteredBookings = filter === 'ALL' ? bookings : bookings.filter(b => b.status === filter);
 
-  const stats = {
-    total: bookings.length,
-    pending: bookings.filter(b => b.status === 'PENDING').length,
-    active: bookings.filter(b => ['CONFIRMED', 'PICKED_UP', 'IN_STORAGE', 'OUT_FOR_DELIVERY'].includes(b.status)).length,
-    completed: bookings.filter(b => b.status === 'DELIVERED').length,
-    revenue: bookings.filter(b => b.status !== 'CANCELLED').reduce((sum, b) => sum + Number(b.totalPrice), 0),
-  };
+  if (loading) return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <nav className="bg-gray-900 text-white shadow">
+      <nav className="bg-white shadow">
         <div className="max-w-7xl mx-auto px-4 h-16 flex justify-between items-center">
+          <Link href="/" className="text-2xl font-bold text-blue-600">LuggageGuard</Link>
           <div className="flex items-center space-x-4">
-            <Link href="/" className="text-2xl font-bold">LuggageGuard</Link>
-            <span className="px-3 py-1 bg-red-500 text-white text-xs font-bold rounded">ADMIN</span>
-          </div>
-          <div className="flex items-center space-x-4">
-            <span>👤 {user?.firstName}</span>
-            <Link href="/dashboard" className="text-gray-300 hover:text-white">Mi Dashboard</Link>
-            <button onClick={handleLogout} className="text-gray-300 hover:text-white">Cerrar sesión</button>
+            <span className="text-sm bg-purple-100 text-purple-800 px-3 py-1 rounded-full font-semibold">ADMIN</span>
+            <Link href="/dashboard" className="text-gray-600 hover:text-gray-900">Customer View</Link>
           </div>
         </div>
       </nav>
 
-      <div className="max-w-7xl mx-auto px-4 py-12">
-        <h1 className="text-4xl font-bold mb-8">Panel de Administración</h1>
+      <div className="max-w-7xl mx-auto px-4 py-8">
+        <h1 className="text-3xl font-bold mb-6">Operations Panel</h1>
 
         {/* Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
-          <div className="bg-white rounded-lg p-6 shadow">
-            <div className="text-gray-500 text-sm mb-1">TOTAL</div>
-            <div className="text-3xl font-bold text-gray-900">{stats.total}</div>
-          </div>
-          <div className="bg-white rounded-lg p-6 shadow">
-            <div className="text-yellow-500 text-sm mb-1">PENDIENTES</div>
-            <div className="text-3xl font-bold text-yellow-600">{stats.pending}</div>
-          </div>
-          <div className="bg-white rounded-lg p-6 shadow">
-            <div className="text-blue-500 text-sm mb-1">ACTIVAS</div>
-            <div className="text-3xl font-bold text-blue-600">{stats.active}</div>
-          </div>
-          <div className="bg-white rounded-lg p-6 shadow">
-            <div className="text-green-500 text-sm mb-1">COMPLETADAS</div>
-            <div className="text-3xl font-bold text-green-600">{stats.completed}</div>
-          </div>
-          <div className="bg-white rounded-lg p-6 shadow">
-            <div className="text-purple-500 text-sm mb-1">INGRESOS</div>
-            <div className="text-2xl font-bold text-purple-600">${stats.revenue.toFixed(2)}</div>
-          </div>
+        <div className="grid grid-cols-4 gap-4 mb-8">
+          {['PENDING', 'CONFIRMED', 'IN_STORAGE', 'OUT_FOR_DELIVERY'].map(status => (
+            <div key={status} className="bg-white rounded-lg p-4 shadow">
+              <div className={`text-xs font-semibold mb-1 px-2 py-1 rounded-full inline-block ${STATUS_COLORS[status]}`}>{status.replace('_', ' ')}</div>
+              <div className="text-2xl font-bold mt-2">{bookings.filter(b => b.status === status).length}</div>
+            </div>
+          ))}
         </div>
 
-        {/* All Bookings */}
-        <div className="bg-white rounded-lg shadow">
-          <div className="p-6 border-b">
-            <h2 className="text-2xl font-bold">Todas las Reservas</h2>
-          </div>
+        {/* Filter */}
+        <div className="flex space-x-2 mb-6 flex-wrap gap-2">
+          {['ALL', ...STATUS_FLOW].map(s => (
+            <button key={s} onClick={() => setFilter(s)} className={`px-4 py-2 rounded-lg text-sm font-semibold ${filter === s ? 'bg-blue-500 text-white' : 'bg-white text-gray-600 hover:bg-gray-100'}`}>
+              {s.replace(/_/g, ' ')}
+            </button>
+          ))}
+        </div>
 
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">ID</th>
-                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Cliente</th>
-                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Recogida</th>
-                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Entrega</th>
-                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Maletas</th>
-                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Días</th>
-                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Total</th>
-                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Estado</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200">
-                {bookings.map((booking) => (
-                  <tr key={booking.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 text-sm font-mono text-gray-900">
-                      {booking.id.slice(0, 8)}
-                    </td>
-                    <td className="px-6 py-4 text-sm">
-                      <div className="font-semibold text-gray-900">
-                        {booking.user?.firstName} {booking.user?.lastName}
-                      </div>
-                      <div className="text-gray-500 text-xs">{booking.user?.email}</div>
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-600">
-                      <div>{booking.pickupAddress.substring(0, 30)}...</div>
-                      <div className="text-xs text-gray-500">
-                        {new Date(booking.pickupDate).toLocaleDateString()}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-600">
-                      <div>{booking.deliveryAddress.substring(0, 30)}...</div>
-                      <div className="text-xs text-gray-500">
-                        {new Date(booking.deliveryDate).toLocaleDateString()}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 text-sm text-center font-semibold">
-                      {booking.numberOfBags}
-                    </td>
-                    <td className="px-6 py-4 text-sm text-center font-semibold">
-                      {booking.storageDays}
-                    </td>
-                    <td className="px-6 py-4 text-sm font-bold text-green-600">
-                      ${Number(booking.totalPrice).toFixed(2)}
-                    </td>
-                    <td className="px-6 py-4 text-sm">
-                      <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                        booking.status === 'PENDING' ? 'bg-yellow-100 text-yellow-800' :
-                        booking.status === 'CONFIRMED' ? 'bg-blue-100 text-blue-800' :
-                        booking.status === 'DELIVERED' ? 'bg-green-100 text-green-800' :
-                        'bg-gray-100 text-gray-800'
-                      }`}>
-                        {booking.status}
-                      </span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+        {/* Bookings Table */}
+        <div className="space-y-4">
+          {filteredBookings.length === 0 ? (
+            <div className="bg-white rounded-lg p-8 text-center text-gray-500">No bookings found</div>
+          ) : (
+            filteredBookings.map((booking: any) => (
+              <div key={booking.id} className="bg-white rounded-xl shadow p-6">
+                <div className="flex justify-between items-start mb-4">
+                  <div>
+                    <div className="flex items-center space-x-3">
+                      <h3 className="font-bold text-lg">#{booking.id.slice(0, 8).toUpperCase()}</h3>
+                      <span className={`text-xs px-3 py-1 rounded-full font-semibold ${STATUS_COLORS[booking.status]}`}>{booking.status.replace(/_/g, ' ')}</span>
+                    </div>
+                    <p className="text-sm text-gray-500 mt-1">
+                      {booking.user?.firstName} {booking.user?.lastName} — {booking.user?.email}
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-2xl font-bold text-blue-600">${Number(booking.totalPrice).toFixed(2)}</div>
+                    <div className="text-xs text-gray-500">{new Date(booking.createdAt).toLocaleDateString()}</div>
+                  </div>
+                </div>
+
+                <div className="grid md:grid-cols-2 gap-4 text-sm mb-4">
+                  <div className="bg-gray-50 rounded-lg p-3">
+                    <p className="font-semibold mb-1">📍 Pickup</p>
+                    <p className="text-gray-600">{booking.pickupAddress}</p>
+                    <p className="text-gray-500 text-xs">{new Date(booking.pickupDate).toLocaleDateString()} • {booking.pickupTimeSlot}</p>
+                  </div>
+                  <div className="bg-gray-50 rounded-lg p-3">
+                    <p className="font-semibold mb-1">🚚 Delivery</p>
+                    <p className="text-gray-600">{booking.deliveryAddress}</p>
+                    <p className="text-gray-500 text-xs">{new Date(booking.deliveryDate).toLocaleDateString()} • {booking.deliveryTimeSlot}</p>
+                  </div>
+                </div>
+
+                <div className="flex justify-between items-center">
+                  <div className="flex space-x-4 text-sm text-gray-600">
+                    <span>🎒 {booking.numberOfBags} bag(s)</span>
+                    <span>📅 {booking.storageDays} day(s)</span>
+                    {booking.specialInstructions && <span>📝 {booking.specialInstructions}</span>}
+                  </div>
+                  
+                  {booking.status !== 'DELIVERED' && booking.status !== 'CANCELLED' && (
+                    <select
+                      value={booking.status}
+                      onChange={(e) => updateStatus(booking.id, e.target.value)}
+                      className="border rounded-lg px-3 py-2 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                      {STATUS_FLOW.filter(s => s !== 'CANCELLED').map(s => (
+                        <option key={s} value={s}>{s.replace(/_/g, ' ')}</option>
+                      ))}
+                    </select>
+                  )}
+                </div>
+              </div>
+            ))
+          )}
         </div>
       </div>
     </div>
