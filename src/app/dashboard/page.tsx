@@ -24,18 +24,25 @@ export default function DashboardPage() {
   }, [router]);
 
   const loadBookings = async (token: string) => {
-    try {
-      const response = await fetch('https://luggageguard-backend-production-efd6.up.railway.app/api/bookings', {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      const data = await response.json();
-      if (response.ok) setBookings(data.data || []);
-    } catch (error) {
-      console.error('Error:', error);
-    } finally {
-      setLoading(false);
+  try {
+    const response = await fetch('https://luggageguard-backend-production-efd6.up.railway.app/api/bookings', {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    
+    if (response.status === 401) {
+      localStorage.clear();
+      router.push('/auth/login');
+      return;
     }
-  };
+    
+    const data = await response.json();
+    if (response.ok) setBookings(data.data || []);
+  } catch (error) {
+    console.error('Error:', error);
+  } finally {
+    setLoading(false);
+  }
+};
 
   const handleLogout = () => {
     localStorage.clear();
