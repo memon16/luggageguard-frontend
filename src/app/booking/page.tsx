@@ -40,7 +40,7 @@ const extractZipCode = (address: string): string | null => {
 
 const isValidZipCode = (address: string): boolean => {
   const zip = extractZipCode(address);
-  if (!zip) return true;
+  if (!zip) return false; // Ahora SÍ bloqueamos si no hay ZIP
   return VALID_ZIPCODES.includes(zip);
 };
 
