@@ -49,20 +49,20 @@ export default function AdminPage() {
   };
 
  const updateStatus = async (bookingId: string, newStatus: string) => {
-    const token = localStorage.getItem('accessToken');
-    try {
-      const response = await fetch(`${API_URL}/bookings/${bookingId}`, {
-        method: 'PATCH',
-        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: newStatus })
-      });
-      if (response.ok) {
-        setBookings(prev => prev.map(b => b.id === bookingId ? { ...b, status: newStatus } : b));
-      }
-    } catch (error) {
-      console.error('Error:', error);
+  const token = localStorage.getItem('accessToken');
+  try {
+    const response = await fetch(`${API_URL}/bookings/${bookingId}`, {
+      method: 'PATCH',
+      headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status: newStatus })
+    });
+    if (response.ok) {
+      setBookings(prev => prev.map(b => b.id === bookingId ? { ...b, status: newStatus } : b));
     }
-  };
+  } catch (error) {
+    console.error('Error:', error);
+  }
+};
 
   const activeBookings = bookings.filter(b => !['DELIVERED', 'CANCELLED'].includes(b.status));
   const historyBookings = bookings.filter(b => ['DELIVERED', 'CANCELLED'].includes(b.status));
