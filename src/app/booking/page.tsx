@@ -10,8 +10,8 @@ interface BookingData {
   pickupLng: number;
   pickupDate: string;
   pickupTimeSlot: string;
-  numberOfBags: number;
-  storageDays: number;
+  numberOfBags: number | string;
+  storageDays: number | string;
   deliveryAddress: string;
   deliveryLat: number;
   deliveryLng: number;
@@ -84,12 +84,14 @@ export default function BookingPage() {
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: name === 'numberOfBags' || name === 'storageDays' ? parseInt(value) || 1 : value
-    }));
-  };
+  const { name, value } = e.target;
+  setFormData(prev => ({
+    ...prev,
+    [name]: name === 'numberOfBags' || name === 'storageDays' 
+      ? (value === '' ? '' : parseInt(value) || 1)
+      : value
+  }));
+};
 
   const handleSubmit = async () => {
     setError('');
