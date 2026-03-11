@@ -72,16 +72,18 @@ export default function BookingPage() {
   }, [router]);
 
   const calculatePrice = () => {
-    const basePrice = 15 * formData.numberOfBags;
-    const storagePrice = 8 * formData.numberOfBags * formData.storageDays;
-    let total = basePrice + storagePrice;
-    let discount = 0;
-    if (formData.storageDays >= 7) discount = total * 0.15;
-    else if (formData.storageDays >= 3) discount = total * 0.10;
-    if (formData.numberOfBags >= 3) discount += total * 0.05;
-    total -= discount;
-    return { basePrice, storagePrice, discount, total: Math.max(total, 0) };
-  };
+  const bags = Number(formData.numberOfBags) || 1;
+  const days = Number(formData.storageDays) || 1;
+  const basePrice = 15 * bags;
+  const storagePrice = 8 * bags * days;
+  let total = basePrice + storagePrice;
+  let discount = 0;
+  if (days >= 7) discount = total * 0.15;
+  else if (days >= 3) discount = total * 0.10;
+  if (bags >= 3) discount += total * 0.05;
+  total -= discount;
+  return { basePrice, storagePrice, discount, total: Math.max(total, 0) };
+};
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
   const { name, value } = e.target;
