@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
@@ -30,7 +30,8 @@ const VALID_ZIPCODES = [
   '33109','33119','33154',
   '33010','33011','33012','33013','33014','33015','33016','33018',
   '33030','33031','33032','33033','33034','33035',
-  '33054','33055','33056'
+  '33054','33055','33056','33315','33316','33317','33319','33320','33321','33322','33323','33324','33325',
+  '33326','33328','33329','33334','33388','33122','33126',
 ];
 
 const extractZipCode = (address: string): string | null => {
@@ -40,16 +41,29 @@ const extractZipCode = (address: string): string | null => {
 
 const isValidZipCode = (address: string): boolean => {
   const zip = extractZipCode(address);
-  if (!zip) return false; // Ahora SÍ bloqueamos si no hay ZIP
+  if (!zip) return false;
   return VALID_ZIPCODES.includes(zip);
 };
+
+declare global {
+  interface Window {
+    google: any;
+    initGoogleMaps: () => void;
+  }
+}
 
 export default function BookingPage() {
   const router = useRouter();
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [mapsLoaded, setMapsLoaded] = useState(false);
   
+  const pickupRef = useRef<HTMLInputElement>(null);
+  const deliveryRef = useRef<HTMLInputElement>(null);
+  const pickupAutocomplete = useRef<any>(null);
+  const deliveryAutocomplete = useRef<any>(null);
+
   const [formData, setFormData] = useState<BookingData>({
     pickupAddress: '',
     pickupLat: 25.7617,
@@ -69,31 +83,87 @@ export default function BookingPage() {
   useEffect(() => {
     const token = localStorage.getItem('accessToken');
     if (!token) router.push('/auth/login');
+
+    if (!window.google) {
+      const script = document.createElement('script');
+      script.src = `https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&libraries=places`;
+      script.async = true;
+      script.onload = () => setMapsLoaded(true);
+      document.head.appendChild(script);
+    } else {
+      setMapsLoaded(true);
+    }
   }, [router]);
 
+  useEffect(() => {
+    if (!mapsLoaded) return;
+
+    const miamiCenter = { lat: 25.7617, lng: -80.1918 };
+    const bounds = new window.google.maps.Circle({
+      center: miamiCenter,
+      radius: 80000,
+    }).getBounds();
+
+    if (pickupRef.current && !pickupAutocomplete.current) {
+      pickupAutocomplete.current = new window.google.maps.places.Autocomplete(
+        pickupRef.current,
+        { bounds, strictBounds: true, componentRestrictions: { country: 'us' }, types: ['address'] }
+      );
+      pickupAutocomplete.current.addListener('place_changed', () => {
+        const place = pickupAutocomplete.current.getPlace();
+        if (place.geometry) {
+          setFormData(prev => ({
+            ...prev,
+            pickupAddress: place.formatted_address,
+            pickupLat: place.geometry.location.lat(),
+            pickupLng: place.geometry.location.lng(),
+          }));
+        }
+      });
+    }
+
+    if (deliveryRef.current && !deliveryAutocomplete.current) {
+      deliveryAutocomplete.current = new window.google.maps.places.Autocomplete(
+        deliveryRef.current,
+        { bounds, strictBounds: true, componentRestrictions: { country: 'us' }, types: ['address'] }
+      );
+      deliveryAutocomplete.current.addListener('place_changed', () => {
+        const place = deliveryAutocomplete.current.getPlace();
+        if (place.geometry) {
+          setFormData(prev => ({
+            ...prev,
+            deliveryAddress: place.formatted_address,
+            deliveryLat: place.geometry.location.lat(),
+            deliveryLng: place.geometry.location.lng(),
+          }));
+        }
+      });
+    }
+  }, [mapsLoaded, step]);
+
   const calculatePrice = () => {
-  const bags = Number(formData.numberOfBags) || 1;
-  const days = Number(formData.storageDays) || 1;
-  const basePrice = 15 * bags;
-  const storagePrice = 8 * bags * days;
-  let total = basePrice + storagePrice;
-  let discount = 0;
-  if (days >= 7) discount = total * 0.15;
-  else if (days >= 3) discount = total * 0.10;
-  if (bags >= 3) discount += total * 0.05;
-  total -= discount;
-  return { basePrice, storagePrice, discount, total: Math.max(total, 0) };
-};
+    const bags = Number(formData.numberOfBags) || 1;
+    const days = Number(formData.storageDays) || 1;
+    const basePrice = 15 * bags;
+    const storagePrice = 8 * bags * days;
+    let total = basePrice + storagePrice;
+    let discount = 0;
+    if (days >= 7) discount = total * 0.15;
+    else if (days >= 3) discount = total * 0.10;
+    if (bags >= 3) discount += total * 0.05;
+    total -= discount;
+    return { basePrice, storagePrice, discount, total: Math.max(total, 0) };
+  };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-  const { name, value } = e.target;
-  setFormData(prev => ({
-    ...prev,
-    [name]: name === 'numberOfBags' || name === 'storageDays' 
-      ? (value === '' ? '' : parseInt(value) || 1)
-      : value
-  }));
-};
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: name === 'numberOfBags' || name === 'storageDays'
+        ? (value === '' ? '' : parseInt(value) || 1)
+        : value
+    }));
+  };
 
   const handleSubmit = async () => {
     setError('');
@@ -154,10 +224,17 @@ export default function BookingPage() {
               <h2 className="text-2xl font-bold text-gray-900 mb-4">Pickup Information</h2>
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">Pickup Address</label>
-                <input type="text" name="pickupAddress" value={formData.pickupAddress} onChange={handleChange}
+                <input
+                  ref={pickupRef}
+                  type="text"
+                  name="pickupAddress"
+                  value={formData.pickupAddress}
+                  onChange={handleChange}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="1234 Brickell Ave, Miami, FL 33131" required />
-                <p className="text-xs text-gray-400 mt-1">Include your ZIP code — we service Miami, Brickell, South Beach and surroundings.</p>
+                  placeholder="Start typing your address..."
+                  required
+                />
+                <p className="text-xs text-gray-400 mt-1">We service Miami, Brickell, South Beach and surroundings.</p>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
@@ -184,7 +261,7 @@ export default function BookingPage() {
               <button
                 onClick={() => {
                   if (!isValidZipCode(formData.pickupAddress)) {
-                    setError('Sorry, we currently only service the Miami area (Brickell, South Beach and surroundings). Please include a valid Miami ZIP code in your address.');
+                    setError('Sorry, we currently only service the Miami area. Please select an address from the suggestions.');
                     return;
                   }
                   setError('');
@@ -209,10 +286,17 @@ export default function BookingPage() {
               </div>
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">Delivery Address</label>
-                <input type="text" name="deliveryAddress" value={formData.deliveryAddress} onChange={handleChange}
+                <input
+                  ref={deliveryRef}
+                  type="text"
+                  name="deliveryAddress"
+                  value={formData.deliveryAddress}
+                  onChange={handleChange}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="5678 Ocean Dr, Miami Beach, FL 33139" required />
-                <p className="text-xs text-gray-400 mt-1">Include your ZIP code — we service Miami, Brickell, South Beach and surroundings.</p>
+                  placeholder="Start typing your address..."
+                  required
+                />
+                <p className="text-xs text-gray-400 mt-1">We service Miami, Brickell, South Beach and surroundings.</p>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
@@ -236,7 +320,7 @@ export default function BookingPage() {
                 <button
                   onClick={() => {
                     if (!isValidZipCode(formData.deliveryAddress)) {
-                      setError('Sorry, we currently only service the Miami area (Brickell, South Beach and surroundings). Please include a valid Miami ZIP code in your address.');
+                      setError('Sorry, we currently only service the Miami area. Please select an address from the suggestions.');
                       return;
                     }
                     setError('');
