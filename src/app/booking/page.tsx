@@ -27,7 +27,7 @@ const VALID_ZIPCODES = [
   '33166','33167','33168','33169','33170','33172','33173','33174','33175','33176',
   '33177','33178','33179','33180','33181','33182','33183','33184','33185','33186',
   '33187','33189','33190','33193','33194','33196',
-  '33109','33119','33154',
+  '33109','33119','33154','33122','33126','33166','33315','33316',
   '33010','33011','33012','33013','33014','33015','33016','33018',
   '33030','33031','33032','33033','33034','33035',
   '33054','33055','33056','33315','33316','33317','33319','33320','33321','33322','33323','33324','33325',
@@ -260,13 +260,14 @@ export default function BookingPage() {
               </div>
               <button
                 onClick={() => {
-                  if (!isValidZipCode(formData.pickupAddress)) {
-                    setError('Sorry, we currently only service the Miami area. Please select an address from the suggestions.');
-                    return;
-                  }
-                  setError('');
-                  setStep(2);
-                }}
+  const zip = extractZipCode(formData.pickupAddress);
+  if (zip && !VALID_ZIPCODES.includes(zip)) {
+    setError('Sorry, we currently only service the Miami area.');
+    return;
+  }
+  setError('');
+  setStep(2);
+}}
                 disabled={!formData.pickupAddress || !formData.pickupDate}
                 className="w-full bg-blue-500 text-white py-3 rounded-lg font-semibold hover:bg-blue-600 transition-all disabled:opacity-50"
               >
@@ -319,13 +320,14 @@ export default function BookingPage() {
                 <button onClick={() => setStep(1)} className="flex-1 bg-gray-200 text-gray-700 py-3 rounded-lg font-semibold hover:bg-gray-300">← Back</button>
                 <button
                   onClick={() => {
-                    if (!isValidZipCode(formData.deliveryAddress)) {
-                      setError('Sorry, we currently only service the Miami area. Please select an address from the suggestions.');
+                      const zip = extractZipCode(formData.deliveryAddress);
+                    if (zip && !VALID_ZIPCODES.includes(zip)) {
+                      setError('Sorry, we currently only service the Miami area.');
                       return;
-                    }
-                    setError('');
-                    setStep(3);
-                  }}
+                      }
+                      setError('');
+                      setStep(3);
+                     }}
                   disabled={!formData.deliveryAddress || !formData.deliveryDate}
                   className="flex-1 bg-blue-500 text-white py-3 rounded-lg font-semibold hover:bg-blue-600 disabled:opacity-50"
                 >
