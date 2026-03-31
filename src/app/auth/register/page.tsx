@@ -31,17 +31,16 @@ export default function RegisterPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.message || 'Error al registrarse');
+        throw new Error(data.message || 'Error creating account');
       }
 
-      // Guardar tokens
       localStorage.setItem('accessToken', data.data.accessToken);
       localStorage.setItem('refreshToken', data.data.refreshToken);
       localStorage.setItem('user', JSON.stringify(data.data.user));
 
       router.push('/dashboard');
     } catch (err: any) {
-      setError(err.message || 'Error al registrarse');
+      setError(err.message || 'Error creating account');
     } finally {
       setLoading(false);
     }
@@ -59,12 +58,8 @@ export default function RegisterPage() {
       <div className="max-w-md w-full bg-white rounded-2xl shadow-lg p-8">
         
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            Crear cuenta
-          </h1>
-          <p className="text-gray-600">
-            Únete a LuggageGuard hoy
-          </p>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Create Account</h1>
+          <p className="text-gray-600">Join LuggageGuard today</p>
         </div>
 
         {error && (
@@ -77,69 +72,58 @@ export default function RegisterPage() {
           
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Nombre
-              </label>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">First Name</label>
               <input
                 type="text"
                 name="firstName"
                 value={formData.firstName}
                 onChange={handleChange}
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Juan"
+                placeholder="John"
                 required
               />
             </div>
-
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Apellido
-              </label>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">Last Name</label>
               <input
                 type="text"
                 name="lastName"
                 value={formData.lastName}
                 onChange={handleChange}
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Pérez"
+                placeholder="Smith"
                 required
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
-              Email
-            </label>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">Email</label>
             <input
               type="email"
               name="email"
               value={formData.email}
               onChange={handleChange}
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="tu@email.com"
+              placeholder="you@email.com"
               required
             />
           </div>
 
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
-              Teléfono
-            </label>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">Phone</label>
             <input
               type="tel"
               name="phone"
               value={formData.phone}
               onChange={handleChange}
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="+1234567890"
+              placeholder="+1 (786) 000-0000"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
-              Contraseña
-            </label>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">Password</label>
             <input
               type="password"
               name="password"
@@ -151,7 +135,7 @@ export default function RegisterPage() {
               minLength={8}
             />
             <p className="text-xs text-gray-500 mt-1">
-              Mínimo 8 caracteres, debe incluir mayúscula, minúscula y número
+              Minimum 8 characters, must include uppercase, lowercase and a number
             </p>
           </div>
 
@@ -160,23 +144,23 @@ export default function RegisterPage() {
             disabled={loading}
             className="w-full bg-blue-500 text-white py-3 rounded-lg font-semibold hover:bg-blue-600 transition-all disabled:opacity-50"
           >
-            {loading ? 'Creando cuenta...' : 'Crear Cuenta'}
+            {loading ? 'Creating account...' : 'Create Account'}
           </button>
           
         </form>
 
         <div className="mt-6 text-center">
           <p className="text-gray-600">
-            ¿Ya tienes cuenta?{' '}
+            Already have an account?{' '}
             <Link href="/auth/login" className="text-blue-500 font-semibold hover:text-blue-600">
-              Inicia sesión
+              Sign in
             </Link>
           </p>
         </div>
 
         <div className="mt-4 text-center">
           <Link href="/" className="text-gray-500 hover:text-gray-700">
-            ← Volver al inicio
+            ← Back to home
           </Link>
         </div>
 
