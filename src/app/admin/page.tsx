@@ -103,7 +103,11 @@ export default function AdminPage() {
           <p className="text-gray-500 text-xs">{new Date(booking.deliveryDate).toLocaleDateString()} • {booking.deliveryTimeSlot}</p>
         </div>
       </div>
-
+{booking.specialInstructions && (
+  <div className="mt-3 bg-yellow-50 border border-yellow-200 rounded-lg px-3 py-2 text-sm text-yellow-800">
+    📝 <strong>Instructions:</strong> {booking.specialInstructions}
+  </div>
+)}
       <div className="flex justify-between items-center">
         <div className="flex space-x-4 text-sm text-gray-600">
           <span>🎒 {booking.numberOfBags} bag(s)</span>
