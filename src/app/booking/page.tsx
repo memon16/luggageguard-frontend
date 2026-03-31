@@ -156,14 +156,29 @@ export default function BookingPage() {
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
+  const { name, value } = e.target;
+  
+  setFormData(prev => {
+    const updated = {
       ...prev,
       [name]: name === 'numberOfBags' || name === 'storageDays'
         ? (value === '' ? '' : parseInt(value) || 1)
         : value
-    }));
-  };
+    };
+
+    // Auto-calculate delivery date
+    const pickupDate = name === 'pickupDate' ? value : prev.pickupDate;
+    const storageDays = name === 'storageDays' ? (parseInt(value) || 1) : (Number(prev.storageDays) || 1);
+
+    if (pickupDate && storageDays) {
+      const pickup = new Date(pickupDate);
+      pickup.setDate(pickup.getDate() + storageDays);
+      updated.deliveryDate = pickup.toISOString().split('T')[0];
+    }
+
+    return updated;
+  });
+};
 
   const handleSubmit = async () => {
     setError('');
