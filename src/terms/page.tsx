@@ -57,7 +57,7 @@ export default function TermsPage() {
 
           <section>
             <h2 className="text-2xl font-bold text-gray-900 mb-3">8. Contact</h2>
-            <p>For questions about these terms, contact us at <a href="mailto:bookings@luggageguard.miami" className="text-blue-600 hover:underline">bookings@luggageguard.miami</a> or call <a href="tel:+17868358517" className="text-blue-600 hover:underline">+1 (786) 835-8517</a>.</p>
+            <p>For questions about these terms, contact us at <a href="mailto:bookings@luggageguard.miami" className="text-blue-600 hover:underline">bookings@luggageguard.miami</a> or call <a href="tel:+17868358517" className="text-blue-600 hover:underline">+1 (305) 878-0317</a>.</p>
           </section>
         </div>
       </div>

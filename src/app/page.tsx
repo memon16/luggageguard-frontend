@@ -299,7 +299,7 @@ export default function HomePage() {
               <h4 className="font-semibold mb-4">Contact</h4>
               <ul className="space-y-2 text-sm text-neutral-400">
                 <li>bookings@luggageguard.miami</li>
-                <li>+1 (786) 835-8517</li>
+                <li>+1 (305) 878-0317</li>
                 <li>Miami, FL</li>
               </ul>
             </div>

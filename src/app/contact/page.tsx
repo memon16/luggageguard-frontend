@@ -27,7 +27,7 @@ export default function ContactPage() {
             <div>
               <p className="text-sm text-gray-500 font-semibold mb-1">PHONE / WHATSAPP</p>
               <a href="tel:+17868358517" className="text-2xl font-bold text-gray-900 hover:text-blue-600 transition-colors">
-                +1 (786) 835-8517
+                +1 (305) 878-0317
               </a>
               <p className="text-gray-500 text-sm mt-1">Available 7 days a week</p>
             </div>
