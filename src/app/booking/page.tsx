@@ -383,6 +383,12 @@ export default function BookingPage() {
                   rows={3} className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="e.g. Call upon arrival, gate code, etc." />
               </div>
+              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 text-sm text-yellow-800">
+  <p className="font-semibold mb-1">⚠️ Important Notice</p>
+  <p className="mb-2">LuggageGuard is not responsible for items left inside luggage. We recommend removing valuables such as cash, jewelry, electronics, and important documents before storage. Liability is limited to $500 per booking.</p>
+  <p>If your luggage contains fragile, delicate, or high-value items, please let us know in the Special Instructions field so we can provide appropriate handling.</p>
+  <p className="mt-2 font-semibold">By confirming this booking you agree to our <a href="/terms" className="underline">Terms of Service</a>.</p>
+</div>
               <div className="flex space-x-4">
                 <button onClick={() => setStep(2)} className="flex-1 bg-gray-200 text-gray-700 py-3 rounded-lg font-semibold hover:bg-gray-300">← Back</button>
                 <button onClick={handleSubmit} disabled={loading} className="flex-1 bg-blue-500 text-white py-3 rounded-lg font-semibold hover:bg-blue-600 disabled:opacity-50">
