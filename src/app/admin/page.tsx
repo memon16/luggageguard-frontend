@@ -67,7 +67,7 @@ export default function AdminPage() {
   const printLabel = async (booking: any) => {
     const QRCode = (await import('qrcode')).default;
     const qrDataUrl = await QRCode.toDataURL(
-      `https://luggageguard.miami/booking/${booking.id}`,
+      `https://luggageguard.miami/admin?booking=${booking.id}`,
       { width: 150, margin: 1 }
     );
 
