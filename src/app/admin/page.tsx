@@ -128,6 +128,71 @@ export default function AdminPage() {
       </div>
     </div>
   );
+  
+  const printLabel = async (booking: any) => {
+  const QRCode = (await import('qrcode')).default;
+  const qrDataUrl = await QRCode.toDataURL(
+    `https://luggageguard.miami/booking/${booking.id}`,
+    { width: 150, margin: 1 }
+  );
+
+  const labelWindow = window.open('', '_blank');
+  if (!labelWindow) return;
+
+  labelWindow.document.write(`
+    <html>
+    <head>
+      <title>LuggageGuard Label - ${booking.id.slice(0, 8).toUpperCase()}</title>
+      <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 20px; }
+        .label { border: 2px solid black; border-radius: 8px; padding: 16px; max-width: 400px; margin: 0 auto; }
+        .header { background: #2563eb; color: white; padding: 10px; border-radius: 6px; text-align: center; margin-bottom: 12px; }
+        .header h1 { margin: 0; font-size: 20px; }
+        .booking-id { font-size: 24px; font-weight: bold; text-align: center; letter-spacing: 3px; margin: 10px 0; }
+        .section { margin-bottom: 10px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
+        .label-text { font-size: 11px; color: #666; margin: 0; }
+        .value { font-size: 13px; font-weight: bold; margin: 2px 0 0; }
+        .qr-section { text-align: center; margin-top: 12px; }
+        .footer { text-align: center; font-size: 10px; color: #999; margin-top: 8px; }
+        @media print { body { margin: 0; } }
+      </style>
+    </head>
+    <body onload="window.print()">
+      <div class="label">
+        <div class="header">
+          <h1>LuggageGuard 🧳</h1>
+        </div>
+        <div class="booking-id">#${booking.id.slice(0, 8).toUpperCase()}</div>
+        <div class="section">
+          <p class="label-text">CUSTOMER</p>
+          <p class="value">${booking.user?.firstName} ${booking.user?.lastName}</p>
+          <p class="value" style="font-weight: normal; font-size: 12px;">${booking.user?.phone || ''}</p>
+        </div>
+        <div class="section">
+          <p class="label-text">PICKUP</p>
+          <p class="value">${booking.pickupAddress}</p>
+          <p class="value" style="font-weight: normal;">${new Date(booking.pickupDate).toLocaleDateString()} • ${booking.pickupTimeSlot}</p>
+        </div>
+        <div class="section">
+          <p class="label-text">DELIVERY</p>
+          <p class="value">${booking.deliveryAddress}</p>
+          <p class="value" style="font-weight: normal;">${new Date(booking.deliveryDate).toLocaleDateString()} • ${booking.deliveryTimeSlot}</p>
+        </div>
+        <div class="section">
+          <p class="label-text">BAGS / DAYS</p>
+          <p class="value">${booking.numberOfBags} bag(s) • ${booking.storageDays} day(s)</p>
+        </div>
+        <div class="qr-section">
+          <img src="${qrDataUrl}" alt="QR Code" />
+          <p class="footer">Scan to view booking details</p>
+        </div>
+        <div class="footer">luggageguard.miami • +1 (305) 878-0317</div>
+      </div>
+    </body>
+    </html>
+  `);
+  labelWindow.document.close();
+};
 
   return (
     <div className="min-h-screen bg-gray-50">
