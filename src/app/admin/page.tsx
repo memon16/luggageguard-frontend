@@ -48,25 +48,89 @@ export default function AdminPage() {
     }
   };
 
- const updateStatus = async (bookingId: string, newStatus: string) => {
-  const token = localStorage.getItem('accessToken');
-  try {
-    const response = await fetch(`${API_URL}/bookings/${bookingId}`, {
-      method: 'PATCH',
-      headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ status: newStatus })
-    });
-    if (response.ok) {
-      setBookings(prev => prev.map(b => b.id === bookingId ? { ...b, status: newStatus } : b));
+  const updateStatus = async (bookingId: string, newStatus: string) => {
+    const token = localStorage.getItem('accessToken');
+    try {
+      const response = await fetch(`${API_URL}/bookings/${bookingId}`, {
+        method: 'PATCH',
+        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: newStatus })
+      });
+      if (response.ok) {
+        setBookings(prev => prev.map(b => b.id === bookingId ? { ...b, status: newStatus } : b));
+      }
+    } catch (error) {
+      console.error('Error:', error);
     }
-  } catch (error) {
-    console.error('Error:', error);
-  }
-};
+  };
+
+  const printLabel = async (booking: any) => {
+    const QRCode = (await import('qrcode')).default;
+    const qrDataUrl = await QRCode.toDataURL(
+      `https://luggageguard.miami/booking/${booking.id}`,
+      { width: 150, margin: 1 }
+    );
+
+    const labelWindow = window.open('', '_blank');
+    if (!labelWindow) return;
+
+    labelWindow.document.write(`
+      <html>
+      <head>
+        <title>LuggageGuard Label - ${booking.id.slice(0, 8).toUpperCase()}</title>
+        <style>
+          body { font-family: Arial, sans-serif; margin: 0; padding: 20px; }
+          .label { border: 2px solid black; border-radius: 8px; padding: 16px; max-width: 400px; margin: 0 auto; }
+          .header { background: #2563eb; color: white; padding: 10px; border-radius: 6px; text-align: center; margin-bottom: 12px; }
+          .header h1 { margin: 0; font-size: 20px; }
+          .booking-id { font-size: 24px; font-weight: bold; text-align: center; letter-spacing: 3px; margin: 10px 0; }
+          .section { margin-bottom: 10px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
+          .label-text { font-size: 11px; color: #666; margin: 0; }
+          .value { font-size: 13px; font-weight: bold; margin: 2px 0 0; }
+          .qr-section { text-align: center; margin-top: 12px; }
+          .footer { text-align: center; font-size: 10px; color: #999; margin-top: 8px; }
+          @media print { body { margin: 0; } }
+        </style>
+      </head>
+      <body onload="window.print()">
+        <div class="label">
+          <div class="header">
+            <h1>LuggageGuard 🧳</h1>
+          </div>
+          <div class="booking-id">#${booking.id.slice(0, 8).toUpperCase()}</div>
+          <div class="section">
+            <p class="label-text">CUSTOMER</p>
+            <p class="value">${booking.user?.firstName} ${booking.user?.lastName}</p>
+            <p class="value" style="font-weight: normal; font-size: 12px;">${booking.user?.phone || ''}</p>
+          </div>
+          <div class="section">
+            <p class="label-text">PICKUP</p>
+            <p class="value">${booking.pickupAddress}</p>
+            <p class="value" style="font-weight: normal;">${new Date(booking.pickupDate).toLocaleDateString()} • ${booking.pickupTimeSlot}</p>
+          </div>
+          <div class="section">
+            <p class="label-text">DELIVERY</p>
+            <p class="value">${booking.deliveryAddress}</p>
+            <p class="value" style="font-weight: normal;">${new Date(booking.deliveryDate).toLocaleDateString()} • ${booking.deliveryTimeSlot}</p>
+          </div>
+          <div class="section">
+            <p class="label-text">BAGS / DAYS</p>
+            <p class="value">${booking.numberOfBags} bag(s) • ${booking.storageDays} day(s)</p>
+          </div>
+          <div class="qr-section">
+            <img src="${qrDataUrl}" alt="QR Code" />
+            <p class="footer">Scan to view booking details</p>
+          </div>
+          <div class="footer">luggageguard.miami • +1 (305) 878-0317</div>
+        </div>
+      </body>
+      </html>
+    `);
+    labelWindow.document.close();
+  };
 
   const activeBookings = bookings.filter(b => !['DELIVERED', 'CANCELLED'].includes(b.status));
   const historyBookings = bookings.filter(b => ['DELIVERED', 'CANCELLED'].includes(b.status));
-
   const filteredActive = filter === 'ALL' ? activeBookings : activeBookings.filter(b => b.status === filter);
 
   if (loading) return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
@@ -82,7 +146,7 @@ export default function AdminPage() {
             </span>
           </div>
           <p className="text-sm text-gray-500 mt-1">
-             {booking.user?.firstName} {booking.user?.lastName} — {booking.user?.email} — 📞 {booking.user?.phone || 'No phone'}
+            {booking.user?.firstName} {booking.user?.lastName} — {booking.user?.email} — 📞 {booking.user?.phone || 'No phone'}
           </p>
         </div>
         <div className="text-right">
@@ -103,96 +167,40 @@ export default function AdminPage() {
           <p className="text-gray-500 text-xs">{new Date(booking.deliveryDate).toLocaleDateString()} • {booking.deliveryTimeSlot}</p>
         </div>
       </div>
-{booking.specialInstructions && (
-  <div className="mt-3 bg-yellow-50 border border-yellow-200 rounded-lg px-3 py-2 text-sm text-yellow-800">
-    📝 <strong>Instructions:</strong> {booking.specialInstructions}
-  </div>
-)}
+
+      {booking.specialInstructions && (
+        <div className="mt-3 bg-yellow-50 border border-yellow-200 rounded-lg px-3 py-2 text-sm text-yellow-800 mb-4">
+          📝 <strong>Instructions:</strong> {booking.specialInstructions}
+        </div>
+      )}
+
       <div className="flex justify-between items-center">
         <div className="flex space-x-4 text-sm text-gray-600">
           <span>🎒 {booking.numberOfBags} bag(s)</span>
           <span>📅 {booking.storageDays} day(s)</span>
-          {booking.specialInstructions && <span>📝 {booking.specialInstructions}</span>}
         </div>
-        {!['DELIVERED', 'CANCELLED'].includes(booking.status) && (
-          <select
-            value={booking.status}
-            onChange={(e) => updateStatus(booking.id, e.target.value)}
-            className="border rounded-lg px-3 py-2 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500"
+        <div className="flex space-x-2 items-center">
+          <button
+            onClick={() => printLabel(booking)}
+            className="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 font-semibold text-sm"
           >
-            {STATUS_FLOW.filter(s => s !== 'CANCELLED').map(s => (
-              <option key={s} value={s}>{s.replace(/_/g, ' ')}</option>
-            ))}
-          </select>
-        )}
+            🖨️ Print Label
+          </button>
+          {!['DELIVERED', 'CANCELLED'].includes(booking.status) && (
+            <select
+              value={booking.status}
+              onChange={(e) => updateStatus(booking.id, e.target.value)}
+              className="border rounded-lg px-3 py-2 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              {STATUS_FLOW.filter(s => s !== 'CANCELLED').map(s => (
+                <option key={s} value={s}>{s.replace(/_/g, ' ')}</option>
+              ))}
+            </select>
+          )}
+        </div>
       </div>
     </div>
   );
-  
-  const printLabel = async (booking: any) => {
-  const QRCode = (await import('qrcode')).default;
-  const qrDataUrl = await QRCode.toDataURL(
-    `https://luggageguard.miami/booking/${booking.id}`,
-    { width: 150, margin: 1 }
-  );
-
-  const labelWindow = window.open('', '_blank');
-  if (!labelWindow) return;
-
-  labelWindow.document.write(`
-    <html>
-    <head>
-      <title>LuggageGuard Label - ${booking.id.slice(0, 8).toUpperCase()}</title>
-      <style>
-        body { font-family: Arial, sans-serif; margin: 0; padding: 20px; }
-        .label { border: 2px solid black; border-radius: 8px; padding: 16px; max-width: 400px; margin: 0 auto; }
-        .header { background: #2563eb; color: white; padding: 10px; border-radius: 6px; text-align: center; margin-bottom: 12px; }
-        .header h1 { margin: 0; font-size: 20px; }
-        .booking-id { font-size: 24px; font-weight: bold; text-align: center; letter-spacing: 3px; margin: 10px 0; }
-        .section { margin-bottom: 10px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
-        .label-text { font-size: 11px; color: #666; margin: 0; }
-        .value { font-size: 13px; font-weight: bold; margin: 2px 0 0; }
-        .qr-section { text-align: center; margin-top: 12px; }
-        .footer { text-align: center; font-size: 10px; color: #999; margin-top: 8px; }
-        @media print { body { margin: 0; } }
-      </style>
-    </head>
-    <body onload="window.print()">
-      <div class="label">
-        <div class="header">
-          <h1>LuggageGuard 🧳</h1>
-        </div>
-        <div class="booking-id">#${booking.id.slice(0, 8).toUpperCase()}</div>
-        <div class="section">
-          <p class="label-text">CUSTOMER</p>
-          <p class="value">${booking.user?.firstName} ${booking.user?.lastName}</p>
-          <p class="value" style="font-weight: normal; font-size: 12px;">${booking.user?.phone || ''}</p>
-        </div>
-        <div class="section">
-          <p class="label-text">PICKUP</p>
-          <p class="value">${booking.pickupAddress}</p>
-          <p class="value" style="font-weight: normal;">${new Date(booking.pickupDate).toLocaleDateString()} • ${booking.pickupTimeSlot}</p>
-        </div>
-        <div class="section">
-          <p class="label-text">DELIVERY</p>
-          <p class="value">${booking.deliveryAddress}</p>
-          <p class="value" style="font-weight: normal;">${new Date(booking.deliveryDate).toLocaleDateString()} • ${booking.deliveryTimeSlot}</p>
-        </div>
-        <div class="section">
-          <p class="label-text">BAGS / DAYS</p>
-          <p class="value">${booking.numberOfBags} bag(s) • ${booking.storageDays} day(s)</p>
-        </div>
-        <div class="qr-section">
-          <img src="${qrDataUrl}" alt="QR Code" />
-          <p class="footer">Scan to view booking details</p>
-        </div>
-        <div class="footer">luggageguard.miami • +1 (305) 878-0317</div>
-      </div>
-    </body>
-    </html>
-  `);
-  labelWindow.document.close();
-};
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -209,7 +217,6 @@ export default function AdminPage() {
       <div className="max-w-7xl mx-auto px-4 py-8">
         <h1 className="text-3xl font-bold mb-6">Operations Panel</h1>
 
-        {/* Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
           {['PENDING', 'CONFIRMED', 'IN_STORAGE', 'OUT_FOR_DELIVERY'].map(status => (
             <div key={status} className="bg-white rounded-lg p-4 shadow">
@@ -221,7 +228,6 @@ export default function AdminPage() {
           ))}
         </div>
 
-        {/* Tabs */}
         <div className="flex space-x-2 mb-6">
           <button
             onClick={() => setTab('active')}
@@ -237,7 +243,6 @@ export default function AdminPage() {
           </button>
         </div>
 
-        {/* Active Tab */}
         {tab === 'active' && (
           <>
             <div className="flex space-x-2 mb-6 flex-wrap gap-2">
@@ -257,7 +262,6 @@ export default function AdminPage() {
           </>
         )}
 
-        {/* History Tab */}
         {tab === 'history' && (
           <div className="space-y-4">
             {historyBookings.length === 0
