@@ -150,8 +150,12 @@ export default function AdminPage() {
           </p>
         </div>
         <div className="text-right">
-          <div className="text-2xl font-bold text-blue-600">${Number(booking.totalPrice).toFixed(2)}</div>
-          <div className="text-xs text-gray-500">{new Date(booking.createdAt).toLocaleDateString()}</div>
+            <div className="text-2xl font-bold text-blue-600">${Number(booking.totalPrice).toFixed(2)}</div>
+            <div className="text-xs text-gray-500">{new Date(booking.createdAt).toLocaleDateString()}</div>
+            {booking.payment?.status === 'SUCCEEDED' 
+              ? <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full font-semibold">✅ Paid</span>
+              : <span className="text-xs bg-red-100 text-red-700 px-2 py-1 rounded-full font-semibold">⏳ Unpaid</span>
+            }
         </div>
       </div>
 
