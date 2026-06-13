@@ -266,9 +266,12 @@ export default function BookingPage() {
                   <label className="block text-sm font-semibold text-gray-700 mb-2">Time Slot</label>
                   <select name="pickupTimeSlot" value={formData.pickupTimeSlot} onChange={handleChange}
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                   <option value="06:00-09:00">6:00 AM - 9:00 AM</option>
                     <option value="09:00-12:00">9:00 AM - 12:00 PM</option>
                     <option value="12:00-15:00">12:00 PM - 3:00 PM</option>
                     <option value="15:00-18:00">3:00 PM - 6:00 PM</option>
+                    <option value="18:00-21:00">6:00 PM - 9:00 PM</option>
+                    <option value="21:00-00:00">9:00 PM - 12:00 AM</option>
                   </select>
                 </div>
               </div>
@@ -329,9 +332,12 @@ export default function BookingPage() {
                   <label className="block text-sm font-semibold text-gray-700 mb-2">Time Slot</label>
                   <select name="deliveryTimeSlot" value={formData.deliveryTimeSlot} onChange={handleChange}
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <option value="06:00-09:00">6:00 AM - 9:00 AM</option>
                     <option value="09:00-12:00">9:00 AM - 12:00 PM</option>
                     <option value="12:00-15:00">12:00 PM - 3:00 PM</option>
                     <option value="15:00-18:00">3:00 PM - 6:00 PM</option>
+                    <option value="18:00-21:00">6:00 PM - 9:00 PM</option>
+                    <option value="21:00-00:00">9:00 PM - 12:00 AM</option>
                   </select>
                 </div>
               </div>
