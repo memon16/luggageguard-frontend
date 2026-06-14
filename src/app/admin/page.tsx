@@ -106,12 +106,12 @@ export default function AdminPage() {
           <div class="section">
             <p class="label-text">PICKUP</p>
             <p class="value">${booking.pickupAddress}</p>
-            <p class="value" style="font-weight: normal;">${new Date(booking.pickupDate).toLocaleDateString()} • ${booking.pickupTimeSlot}</p>
+            <p class="value" style="font-weight: normal;">${new Date(booking.pickupDate + 'T12:00:00').toLocaleDateString()} • ${booking.pickupTimeSlot}</p>
           </div>
           <div class="section">
             <p class="label-text">DELIVERY</p>
             <p class="value">${booking.deliveryAddress}</p>
-            <p class="value" style="font-weight: normal;">${new Date(booking.deliveryDate).toLocaleDateString()} • ${booking.deliveryTimeSlot}</p>
+            <p class="value" style="font-weight: normal;">${new Date(booking.deliveryDate + 'T12:00:00').toLocaleDateString()} • ${booking.deliveryTimeSlot}</p>
           </div>
           <div class="section">
             <p class="label-text">BAGS / DAYS</p>

@@ -109,12 +109,12 @@ export default function DashboardPage() {
         <div>
           <p className="font-semibold mb-1">📍 Pickup:</p>
           <p className="text-gray-600">{booking.pickupAddress}</p>
-          <p className="text-gray-500 text-xs">{new Date(booking.pickupDate).toLocaleDateString()}</p>
+          <p className="text-gray-500 text-xs">{new Date(booking.pickupDate + 'T12:00:00').toLocaleDateString()}</p>
         </div>
         <div>
           <p className="font-semibold mb-1">🚚 Delivery:</p>
           <p className="text-gray-600">{booking.deliveryAddress}</p>
-          <p className="text-gray-500 text-xs">{new Date(booking.deliveryDate).toLocaleDateString()}</p>
+          <p className="text-gray-500 text-xs">{new Date(booking.deliveryDate + 'T12:00:00').toLocaleDateString()}</p>
         </div>
       </div>
 
