@@ -171,13 +171,14 @@ export default function BookingPage() {
     const storageDays = name === 'storageDays' ? (parseInt(value) || 1) : (Number(prev.storageDays) || 1);
 
     if (pickupDate && storageDays) {
-          const [year, month, day] = pickupDate.split('-').map(Number);
-          const pickup = new Date(year, month - 1, day);
-          pickup.setDate(pickup.getDate() + storageDays);
-          const y = pickup.getFullYear();
-          const m = String(pickup.getMonth() + 1).padStart(2, '0');
-          const d = String(pickup.getDate()).padStart(2, '0');
-          updated.deliveryDate = `${y}-${m}-${d}`;
+  const [year, month, day] = pickupDate.split('-').map(Number);
+  const pickup = new Date(year, month - 1, day);
+  const days = parseInt(String(storageDays)) || 1;
+  pickup.setDate(pickup.getDate() + days);
+  const y = pickup.getFullYear();
+  const m = String(pickup.getMonth() + 1).padStart(2, '0');
+  const d = String(pickup.getDate()).padStart(2, '0');
+  updated.deliveryDate = `${y}-${m}-${d}`;
 }
 
     return updated;
