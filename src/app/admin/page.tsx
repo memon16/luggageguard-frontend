@@ -206,30 +206,28 @@ const uploadPhoto = async (bookingId: string, file: File) => {
           <span>📅 {booking.storageDays} day(s)</span>
         </div>
         <div className="flex space-x-2 items-center">
+          <input
+            type="file"
+            accept="image/*"
+            capture="environment"
+            id={`photo-${booking.id}`}
+            style={{ display: 'none' }}
+            onChange={(e) => {
+              if (e.target.files && e.target.files[0]) {
+                uploadPhoto(booking.id, e.target.files[0]);
+              }
+            }}
+          />
+          <button
+            onClick={() => document.getElementById(`photo-${booking.id}`)?.click()}
+            className="bg-blue-100 text-blue-700 px-4 py-2 rounded-lg hover:bg-blue-200 font-semibold text-sm"
+          >
+            📸 Photo
+          </button>
           <button
             onClick={() => printLabel(booking)}
             className="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 font-semibold text-sm"
           >
-
-            <input
-  type="file"
-  accept="image/*"
-  capture="environment"
-  id={`photo-${booking.id}`}
-  style={{ display: 'none' }}
-  onChange={(e) => {
-    if (e.target.files && e.target.files[0]) {
-      uploadPhoto(booking.id, e.target.files[0]);
-    }
-  }}
-/>
-<button
-  onClick={() => document.getElementById(`photo-${booking.id}`)?.click()}
-  className="bg-blue-100 text-blue-700 px-4 py-2 rounded-lg hover:bg-blue-200 font-semibold text-sm"
->
-  📸 Photo
-</button>
-
             🖨️ Print Label
           </button>
           {!['DELIVERED', 'CANCELLED'].includes(booking.status) && (
