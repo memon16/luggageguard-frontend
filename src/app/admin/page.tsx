@@ -128,6 +128,28 @@ export default function AdminPage() {
     `);
     labelWindow.document.close();
   };
+const uploadPhoto = async (bookingId: string, file: File) => {
+  const token = localStorage.getItem('accessToken');
+  const formData = new FormData();
+  formData.append('photo', file);
+
+  try {
+    const response = await fetch(`${API_URL}/bookings/${bookingId}/photo`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${token}` },
+      body: formData,
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      setBookings(prev => prev.map(b => b.id === bookingId ? { ...b, photoUrl: data.data.photoUrl } : b));
+      alert('Photo uploaded successfully!');
+    }
+  } catch (error) {
+    console.error('Error uploading photo:', error);
+    alert('Error uploading photo');
+  }
+};
 
   const activeBookings = bookings.filter(b => !['DELIVERED', 'CANCELLED'].includes(b.status));
   const historyBookings = bookings.filter(b => ['DELIVERED', 'CANCELLED'].includes(b.status));
@@ -188,6 +210,26 @@ export default function AdminPage() {
             onClick={() => printLabel(booking)}
             className="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 font-semibold text-sm"
           >
+
+            <input
+  type="file"
+  accept="image/*"
+  capture="environment"
+  id={`photo-${booking.id}`}
+  style={{ display: 'none' }}
+  onChange={(e) => {
+    if (e.target.files && e.target.files[0]) {
+      uploadPhoto(booking.id, e.target.files[0]);
+    }
+  }}
+/>
+<button
+  onClick={() => document.getElementById(`photo-${booking.id}`)?.click()}
+  className="bg-blue-100 text-blue-700 px-4 py-2 rounded-lg hover:bg-blue-200 font-semibold text-sm"
+>
+  📸 Photo
+</button>
+
             🖨️ Print Label
           </button>
           {!['DELIVERED', 'CANCELLED'].includes(booking.status) && (
