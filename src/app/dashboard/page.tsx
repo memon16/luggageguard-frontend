@@ -117,7 +117,12 @@ export default function DashboardPage() {
           <p className="text-gray-500 text-xs">{new Date(booking.deliveryDate).toLocaleDateString('en-US', {timeZone: 'UTC'})}</p>
         </div>
       </div>
-
+          {booking.photoUrl && (
+            <div className="mt-4 bg-blue-50 border border-blue-200 rounded-lg p-3">
+              <p className="text-xs font-semibold text-blue-700 mb-2">📸 Your bags at pickup</p>
+              <img src={booking.photoUrl} alt="Luggage photo" className="rounded-lg w-full max-h-48 object-cover" />
+            </div>
+          )}
       <div className="mt-4 pt-4 border-t flex justify-between items-center">
         <div className="flex space-x-4 text-sm text-gray-600">
           <span>🎒 {booking.numberOfBags} bag(s)</span>
