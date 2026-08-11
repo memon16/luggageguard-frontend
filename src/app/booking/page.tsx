@@ -308,6 +308,19 @@ export default function BookingPage() {
                   min="1" max="30" className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required />
                 <p className="text-sm text-gray-500 mt-1">Discount: 3-6 days (10%), 7+ days (15%)</p>
               </div>
+            <div className="flex gap-2 mt-2">
+             <button
+            type="button"
+            onClick={() => setFormData(prev => ({
+              ...prev,
+              storageDays: 1,
+              deliveryDate: prev.pickupDate
+            }))}
+            className="text-sm bg-blue-100 text-blue-700 px-3 py-1 rounded-lg hover:bg-blue-200 font-semibold"
+          >
+            📅 Same Day
+             </button>
+           </div>    
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">Delivery Address</label>
                 <input
