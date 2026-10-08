@@ -171,7 +171,9 @@ useEffect(() => {
 
     // Auto-calculate delivery date
     const pickupDate = name === 'pickupDate' ? value : prev.pickupDate;
-    const storageDays = name === 'storageDays' ? (parseInt(value) || 1) : (Number(prev.storageDays) || 1);
+    const storageDays = name === 'storageDays' 
+  ? (parseInt(value) >= 0 ? parseInt(value) : 1) 
+  : (Number(prev.storageDays) >= 0 ? Number(prev.storageDays) : 1);
 
    if (pickupDate) {
   const days = parseInt(String(storageDays)) || 0;
