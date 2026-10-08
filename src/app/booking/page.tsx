@@ -81,65 +81,68 @@ export default function BookingPage() {
   });
 
   useEffect(() => {
-    const token = localStorage.getItem('accessToken');
-    if (!token) router.push('/auth/login');
+  const token = localStorage.getItem('accessToken');
+  if (!token) router.push('/auth/login');
 
-    if (!window.google) {
-      const script = document.createElement('script');
-      script.src = `https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&libraries=places`;
-      script.async = true;
-      script.onload = () => setMapsLoaded(true);
-      document.head.appendChild(script);
-    } else {
-      setMapsLoaded(true);
-    }
-  }, [router]);
+  if (!window.google) {
+    const script = document.createElement('script');
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&libraries=places`;
+    script.async = true;
+    script.onload = () => setMapsLoaded(true);
+    document.head.appendChild(script);
+  } else {
+    setMapsLoaded(true);
+  }
+}, [router]);
 
-  useEffect(() => {
-    if (!mapsLoaded) return;
+useEffect(() => {
+  if (!mapsLoaded) return;
 
-    const miamiCenter = { lat: 25.7617, lng: -80.1918 };
-    const bounds = new window.google.maps.Circle({
-      center: miamiCenter,
-      radius: 80000,
-    }).getBounds();
+  const miamiCenter = { lat: 25.7617, lng: -80.1918 };
+  const bounds = new window.google.maps.Circle({
+    center: miamiCenter,
+    radius: 80000,
+  }).getBounds();
 
-    if (pickupRef.current && !pickupAutocomplete.current) {
-      pickupAutocomplete.current = new window.google.maps.places.Autocomplete(
-        pickupRef.current,
-        { bounds, strictBounds: true, componentRestrictions: { country: 'us' }, types: ['address'] }
-      );
-      pickupAutocomplete.current.addListener('place_changed', () => {
-        const place = pickupAutocomplete.current.getPlace();
-        if (place.geometry) {
-          setFormData(prev => ({
-            ...prev,
-            pickupAddress: place.formatted_address,
-            pickupLat: place.geometry.location.lat(),
-            pickupLng: place.geometry.location.lng(),
-          }));
-        }
-      });
-    }
+  pickupAutocomplete.current = null;
+  deliveryAutocomplete.current = null;
 
-    if (deliveryRef.current && !deliveryAutocomplete.current) {
-      deliveryAutocomplete.current = new window.google.maps.places.Autocomplete(
-        deliveryRef.current,
-        { bounds, strictBounds: true, componentRestrictions: { country: 'us' }, types: ['address'] }
-      );
-      deliveryAutocomplete.current.addListener('place_changed', () => {
-        const place = deliveryAutocomplete.current.getPlace();
-        if (place.geometry) {
-          setFormData(prev => ({
-            ...prev,
-            deliveryAddress: place.formatted_address,
-            deliveryLat: place.geometry.location.lat(),
-            deliveryLng: place.geometry.location.lng(),
-          }));
-        }
-      });
-    }
-  }, [mapsLoaded, step]);
+  if (step === 1 && pickupRef.current) {
+    pickupAutocomplete.current = new window.google.maps.places.Autocomplete(
+      pickupRef.current,
+      { bounds, strictBounds: false, componentRestrictions: { country: 'us' }, types: ['address'] }
+    );
+    pickupAutocomplete.current.addListener('place_changed', () => {
+      const place = pickupAutocomplete.current.getPlace();
+      if (place.geometry) {
+        setFormData(prev => ({
+          ...prev,
+          pickupAddress: place.formatted_address,
+          pickupLat: place.geometry.location.lat(),
+          pickupLng: place.geometry.location.lng(),
+        }));
+      }
+    });
+  }
+
+  if (step === 2 && deliveryRef.current) {
+    deliveryAutocomplete.current = new window.google.maps.places.Autocomplete(
+      deliveryRef.current,
+      { bounds, strictBounds: false, componentRestrictions: { country: 'us' }, types: ['address'] }
+    );
+    deliveryAutocomplete.current.addListener('place_changed', () => {
+      const place = deliveryAutocomplete.current.getPlace();
+      if (place.geometry) {
+        setFormData(prev => ({
+          ...prev,
+          deliveryAddress: place.formatted_address,
+          deliveryLat: place.geometry.location.lat(),
+          deliveryLng: place.geometry.location.lng(),
+        }));
+      }
+    });
+  }
+}, [mapsLoaded, step]);
 
   const calculatePrice = () => {
     const bags = Number(formData.numberOfBags) || 1;
