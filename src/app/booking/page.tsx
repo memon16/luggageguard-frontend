@@ -162,7 +162,7 @@ export default function BookingPage() {
     const updated = {
       ...prev,
       [name]: name === 'numberOfBags' || name === 'storageDays'
-        ? (value === '' ? '' : parseInt(value) || 1)
+        ? (value === '' ? '' : parseInt(value) >= 0 ? parseInt(value) : 1)
         : value
     };
 
