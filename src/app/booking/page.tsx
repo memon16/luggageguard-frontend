@@ -145,18 +145,27 @@ useEffect(() => {
 }, [mapsLoaded, step]);
 
   const calculatePrice = () => {
-    const bags = Number(formData.numberOfBags) || 1;
-    const days = Number(formData.storageDays) || 1;
-    const basePrice = 15 * bags;
-    const storagePrice = 8 * bags * days;
-    let total = basePrice + storagePrice;
-    let discount = 0;
-    if (days >= 7) discount = total * 0.15;
-    else if (days >= 3) discount = total * 0.10;
-    if (bags >= 3) discount += total * 0.05;
-    total -= discount;
-    return { basePrice, storagePrice, discount, total: Math.max(total, 0) };
-  };
+  const bags = Number(formData.numberOfBags) || 1;
+  const days = Number(formData.storageDays) || 0;
+  const isSameDay = formData.pickupDate && formData.deliveryDate && formData.pickupDate === formData.deliveryDate;
+
+  const basePrice = 15 * bags;
+  const storagePrice = isSameDay || days === 0 ? 4 * bags : 8 * bags * days;
+  let subtotal = basePrice + storagePrice;
+  let discount = 0;
+
+  if (!isSameDay && days > 0) {
+    if (days >= 7) discount = subtotal * 0.15;
+    else if (days >= 3) discount = subtotal * 0.10;
+  }
+  if (bags >= 3) discount += subtotal * 0.05;
+  subtotal -= discount;
+  
+  const tax = subtotal * 0.07;
+  const total = subtotal + tax;
+
+  return { basePrice, storagePrice, discount, tax, total: Math.max(total, 0) };
+};
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
   const { name, value } = e.target;
@@ -407,6 +416,10 @@ useEffect(() => {
                 <div className="flex justify-between"><span className="text-gray-700">Base Price:</span><span className="font-semibold">${pricing.basePrice.toFixed(2)}</span></div>
                 <div className="flex justify-between"><span className="text-gray-700">Storage:</span><span className="font-semibold">${pricing.storagePrice.toFixed(2)}</span></div>
                 {pricing.discount > 0 && <div className="flex justify-between text-green-600"><span>Discount:</span><span className="font-semibold">-${pricing.discount.toFixed(2)}</span></div>}
+                <div className="flex justify-between text-orange-600">
+                    <span>Tax (7%):</span>
+                    <span className="font-semibold">+${pricing.tax.toFixed(2)}</span>
+                </div>
                 <div className="border-t border-blue-200 pt-2 flex justify-between text-lg"><span className="font-bold text-gray-900">TOTAL:</span><span className="font-bold text-blue-600">${pricing.total.toFixed(2)}</span></div>
               </div>
               <div>
