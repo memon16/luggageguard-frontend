@@ -185,12 +185,12 @@ const uploadPhoto = async (bookingId: string, file: File) => {
         <div className="bg-gray-50 rounded-lg p-3">
           <p className="font-semibold mb-1">📍 Pickup</p>
           <p className="text-gray-600">{booking.pickupAddress}</p>
-          <p className="text-gray-500 text-xs">{new Date(booking.pickupDate).toLocaleDateString()} • {booking.pickupTimeSlot}</p>
+          <p className="text-gray-500 text-xs">{new Date(booking.pickupDate).toLocaleDateString('en-US', {timeZone: 'UTC'})} • {booking.pickupTimeSlot}</p>
         </div>
         <div className="bg-gray-50 rounded-lg p-3">
           <p className="font-semibold mb-1">🚚 Delivery</p>
           <p className="text-gray-600">{booking.deliveryAddress}</p>
-          <p className="text-gray-500 text-xs">{new Date(booking.deliveryDate).toLocaleDateString()} • {booking.deliveryTimeSlot}</p>
+          <p className="text-gray-500 text-xs">{new Date(booking.deliveryDate).toLocaleDateString('en-US', {timeZone: 'UTC'})} • {booking.deliveryTimeSlot}</p>
         </div>
       </div>
 
