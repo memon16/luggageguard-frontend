@@ -16,6 +16,12 @@ function CheckoutForm({ booking, bookingId }: { booking: any; bookingId: string 
   const [paying, setPaying] = useState(false);
   const [error, setError] = useState('');
 
+  const handleExpired = () => {
+    localStorage.clear();
+    alert('Your session expired. Please sign in again.');
+    router.push('/auth/login');
+  };
+
   const handlePayment = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!stripe || !elements) return;
@@ -29,6 +35,12 @@ function CheckoutForm({ booking, bookingId }: { booking: any; bookingId: string 
         headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({ bookingId })
       });
+
+      if (response.status === 401) {
+        handleExpired();
+        return;
+      }
+
       const data = await response.json();
       if (!response.ok) throw new Error(data.message || 'Error creating payment');
 
@@ -40,11 +52,19 @@ function CheckoutForm({ booking, bookingId }: { booking: any; bookingId: string 
       if (stripeError) { setError(stripeError.message || 'Payment error'); return; }
 
       if (paymentIntent?.status === 'succeeded') {
-        await fetch(`${API_URL}/payments/confirm`, {
+        const confirmResponse = await fetch(`${API_URL}/payments/confirm`, {
           method: 'POST',
           headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
           body: JSON.stringify({ paymentIntentId: paymentIntent.id, bookingId })
         });
+
+        if (confirmResponse.status === 401) {
+          alert('Your payment went through, but your session expired before we could confirm it. Please sign in again and check your dashboard, or contact us at +1 (305) 878-0317.');
+          localStorage.clear();
+          router.push('/auth/login');
+          return;
+        }
+
         router.push('/dashboard?success=true');
       }
     } catch (err: any) {
@@ -82,8 +102,20 @@ export default function PaymentPage({ params }: { params: { id: string } }) {
     fetch(`${API_URL}/bookings/${bookingId}`, {
       headers: { 'Authorization': `Bearer ${token}` }
     })
-      .then(r => r.json())
-      .then(data => { if (data.data) setBooking(data.data); else router.push('/dashboard'); })
+      .then(r => {
+        if (r.status === 401) {
+          localStorage.clear();
+          alert('Your session expired. Please sign in again.');
+          router.push('/auth/login');
+          return null;
+        }
+        return r.json();
+      })
+      .then(data => {
+        if (!data) return;
+        if (data.data) setBooking(data.data);
+        else router.push('/dashboard');
+      })
       .catch(() => router.push('/dashboard'))
       .finally(() => setLoading(false));
   }, []);

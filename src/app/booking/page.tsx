@@ -216,6 +216,8 @@ useEffect(() => {
           deliveryDate: new Date(formData.deliveryDate).toISOString(),
         }),
       });
+
+
       const data = await response.json();
       if (!response.ok) throw new Error(data.message || 'Error creating booking');
       alert('Booking created successfully!');
@@ -226,7 +228,12 @@ useEffect(() => {
       setLoading(false);
     }
   };
-
+  if (response.status === 401) {
+  localStorage.clear();
+  alert('Your session expired. Please sign in again.');
+  router.push('/auth/login');
+  return;
+}
   const pricing = calculatePrice();
 
   return (
