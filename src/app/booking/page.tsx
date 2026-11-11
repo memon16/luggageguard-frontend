@@ -336,17 +336,17 @@ useEffect(() => {
                 <p className="text-sm text-gray-500 mt-1">Discount: 3-6 days (10%), 7+ days (15%)</p>
               </div>
             <div className="flex gap-2 mt-2">
-             <button
-            type="button"
-            onClick={() => setFormData(prev => ({
-              ...prev,
-              storageDays: 1,
-              deliveryDate: prev.pickupDate
-            }))}
-            className="text-sm bg-blue-100 text-blue-700 px-3 py-1 rounded-lg hover:bg-blue-200 font-semibold"
-          >
-            📅 Same Day
-             </button>
+                           <button
+                type="button"
+                onClick={() => setFormData(prev => ({
+                  ...prev,
+                  storageDays: 1,
+                  deliveryDate: prev.pickupDate
+                }))}
+                className="w-full bg-green-500 text-white px-4 py-3 rounded-lg hover:bg-green-600 font-semibold"
+              >
+                ⚡ Same Day Pickup & Delivery (no overnight storage)
+              </button>
            </div>    
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">Delivery Address</label>
@@ -414,7 +414,9 @@ useEffect(() => {
                 </div>
                 <div className="border-t pt-4">
                   <h3 className="font-semibold text-gray-700 mb-2">Storage</h3>
-                  <p className="text-gray-600">{formData.numberOfBags} bag(s) • {formData.storageDays} day(s)</p>
+                  <p className="text-gray-600">
+                    {formData.numberOfBags} bag(s) • {formData.pickupDate === formData.deliveryDate ? 'Same day (no overnight storage)' : `${formData.storageDays} day(s)`}
+                  </p>
                 </div>
                 <div className="border-t pt-4">
                   <h3 className="font-semibold text-gray-700 mb-2">Delivery</h3>
