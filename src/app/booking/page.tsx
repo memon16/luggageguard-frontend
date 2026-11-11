@@ -202,14 +202,17 @@ useEffect(() => {
   });
 };
 
-  const handleSubmit = async () => {
+    const handleSubmit = async () => {
     setError('');
     setLoading(true);
     try {
       const token = localStorage.getItem('accessToken');
       const response = await fetch('https://luggageguard-backend-production-efd6.up.railway.app/api/bookings', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
         body: JSON.stringify({
           ...formData,
           pickupDate: new Date(formData.pickupDate).toISOString(),
@@ -217,6 +220,12 @@ useEffect(() => {
         }),
       });
 
+      if (response.status === 401) {
+        localStorage.clear();
+        alert('Your session expired. Please sign in again.');
+        router.push('/auth/login');
+        return;
+      }
 
       const data = await response.json();
       if (!response.ok) throw new Error(data.message || 'Error creating booking');
@@ -228,12 +237,6 @@ useEffect(() => {
       setLoading(false);
     }
   };
-  if (response.status === 401) {
-  localStorage.clear();
-  alert('Your session expired. Please sign in again.');
-  router.push('/auth/login');
-  return;
-}
   const pricing = calculatePrice();
 
   return (
